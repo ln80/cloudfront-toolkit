@@ -1,12 +1,21 @@
-# Welcome to your CDK TypeScript Construct Library project
+# @ln80/cloudfront-toolkit
 
-You should explore the contents of this project. It demonstrates a CDK Construct Library that includes a construct (`CloudfrontToolkit`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
+A TypeScript CDK toolkit to manage versioned S3 websites with CloudFront KV store, plus a CLI for easy deployment.
 
-The construct defines an interface (`CloudfrontToolkitProps`) to configure the visibility timeout of the queue.
+## Features
 
-## Useful commands
+- CDK construct: `VersionedWebsite`
+  - Creates S3 bucket
+  - CloudFront origin
+  - KV store for versioning / rollback
+- CLI: `ln80-deploy-site` for deploying websites from your project
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
+---
+
+## Installation
+
+Install directly from GitHub:
+
+```bash
+npm install git+https://github.com/your-org/cloudfront-toolkit.git
+```

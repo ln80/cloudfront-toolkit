@@ -6,6 +6,9 @@
     "lib": [
       "es2022"
     ],
+    "rootDir": ".",
+    "outDir": "dist",
+
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -27,5 +30,6 @@
   "exclude": [
     "node_modules",
     "cdk.out"
-  ]
+  ],
+  "include": ["lib", "bin"]
 }
