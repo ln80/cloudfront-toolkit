@@ -1,0 +1,10 @@
+name: "@ln80/cloudfront-toolkit-deploy-action"
+description: "Deploy a new version of a website to CloudFront"
+runs:
+  using: "node20"
+  main: ".github/actions/deploy/dist/index.js"
+
+inputs:
+  name:
+    description: "Name to greet"
+    required: false
