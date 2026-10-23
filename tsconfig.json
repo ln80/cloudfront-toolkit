@@ -23,13 +23,15 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "typeRoots": [
-      "./node_modules/@types"
+    "isolatedModules": true,
+    "types": [
+      "node"
     ]
   },
   "exclude": [
     "node_modules",
-    "cdk.out"
+    "cdk.out",
+    "**/*.test.ts"
   ],
   "include": ["lib", "bin"]
 }

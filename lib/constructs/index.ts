@@ -1,1 +1,1 @@
-export * from "./versioned-website";
+export * from "./versioned-website.js";

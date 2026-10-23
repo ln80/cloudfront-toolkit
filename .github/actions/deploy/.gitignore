@@ -1,3 +1,0 @@
-# Un-ignore dist files (override parent .gitignore)
-!dist/
-!dist/**

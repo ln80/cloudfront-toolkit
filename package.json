@@ -1,38 +1,94 @@
 {
   "name": "@ln80/cloudfront-toolkit",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "private": false,
-  "main": "dist/lib/index.ts",
-  "types": "dist/lib/index.d.ts",
+  "type": "module",
+  "main": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.d.ts",
+      "default": "./dist/lib/index.js"
+    },
+    "./cdk": {
+      "types": "./dist/lib/cdk.d.ts",
+      "default": "./dist/lib/cdk.js"
+    },
+    "./constructs": {
+      "types": "./dist/lib/constructs/index.d.ts",
+      "default": "./dist/lib/constructs/index.js"
+    },
+    "./deploy": {
+      "types": "./dist/lib/deploy/index.d.ts",
+      "default": "./dist/lib/deploy/index.js"
+    },
+    "./dist/lib/constructs": {
+      "types": "./dist/lib/constructs/index.d.ts",
+      "default": "./dist/lib/constructs/index.js"
+    },
+    "./dist/lib/constructs/*": "./dist/lib/constructs/*.js",
+    "./dist/lib/deploy": {
+      "types": "./dist/lib/deploy/index.d.ts",
+      "default": "./dist/lib/deploy/index.js"
+    },
+    "./dist/lib/deploy/*": "./dist/lib/deploy/*.js",
+    "./dist/lib/index.js": {
+      "types": "./dist/lib/index.d.ts",
+      "default": "./dist/lib/index.js"
+    },
+    "./dist/lib/cdk.js": {
+      "types": "./dist/lib/cdk.d.ts",
+      "default": "./dist/lib/cdk.js"
+    },
+    "./package.json": "./package.json"
+  },
   "bin": {
-    "ln80-deploy-site": "dist/bin/deploy-site.js"
+    "cloudfront-toolkit": "dist/bin/cloudfront-toolkit.js"
   },
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf dist",
     "watch": "tsc -w",
-    "test": "jest",
-    "prepare": "npm run build"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run build && npm test"
   },
   "files": [
-    "lib",
-    "dist"
+    "dist",
+    "README.md"
   ],
   "engines": {
     "node": ">=18"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
-    "aws-cdk-lib": "2.205.0",
+    "aws-cdk-lib": ">=2.140.0 <3.0.0",
     "constructs": "^10.0.0"
   },
+  "peerDependenciesMeta": {
+    "aws-cdk-lib": {
+      "optional": true
+    },
+    "constructs": {
+      "optional": true
+    }
+  },
   "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3.922.0",
     "@aws-sdk/client-cloudfront-keyvaluestore": "^3.922.0",
     "@aws-sdk/client-s3": "^3.922.0",
+    "@aws-sdk/signature-v4-multi-region": "^3.922.0",
     "@aws-sdk/signature-v4a": "^3.921.0",
-    "commander": "^14.0.2"
+    "commander": "^14.0.2",
+    "source-map-support": "^0.5.21"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "22.7.9",
+    "aws-cdk-lib": "2.205.0",
+    "constructs": "^10.4.2",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.1",

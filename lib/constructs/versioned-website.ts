@@ -3,13 +3,16 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
-import * as fs from "fs";
 
 export interface VersionedWebsiteProps {
-  projectName: string; // used as prefix for resources
-  bucket?: s3.IBucket; // optional existing S3 bucket; creates a new one if not provided
-  //   versioned?: boolean;       // enable S3 versioning
-  //   createKvStore?: boolean;   // whether to create CF KV store
+  projectName: string;
+  bucket?: s3.IBucket;
+  /**
+   * Origin path on the S3 REST API path (prefix before object key tail).
+   * Must align with `DeploymentManager` (default deploy prefix is `artifacts/…`).
+   * @default '/artifacts'
+   */
+  originPath?: string;
 }
 
 export class VersionedWebsite extends Construct {
@@ -17,13 +20,15 @@ export class VersionedWebsite extends Construct {
   readonly origin: cloudfront.IOrigin;
   readonly kvStore: cloudfront.KeyValueStore;
   readonly responseHeadersPolicy: cloudfront.ResponseHeadersPolicy;
+  readonly originPath: string;
 
   constructor(scope: Construct, id: string, props: VersionedWebsiteProps) {
     super(scope, id);
 
     const { projectName, bucket } = props;
 
-    // S3 bucket to hold website assets - use provided bucket or create a new one
+    this.originPath = props.originPath ?? "/artifacts";
+
     this.bucket =
       bucket ??
       new s3.Bucket(this, `${props.projectName}-Bucket`, {
@@ -33,19 +38,16 @@ export class VersionedWebsite extends Construct {
         versioned: true,
       });
 
-    // S3 origin for CloudFront
     this.origin = origins.S3BucketOrigin.withOriginAccessControl(this.bucket, {
-      originPath: "/artifacts",
+      originPath: this.originPath,
       originId: "website-origin",
     });
 
-    // CloudFront KV store for version/rollback tracking
     this.kvStore = new cloudfront.KeyValueStore(this, "VersionStore", {
       keyValueStoreName: `${props.projectName}-version-store`,
       comment: "Stores current deployment version for immutable deployments",
     });
 
-    // Response headers policy to set security headers
     this.responseHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
       this,
       "ResponseHeadersPolicy",
@@ -75,22 +77,27 @@ export class VersionedWebsite extends Construct {
     );
   }
 
-  public changeUriFunctionFromFile(path: string): cloudfront.Function {
-    // Read the CloudFront function code
-    const functionCode = fs.readFileSync(path, "utf8");
+  /**
+   * Attach a viewer-request CloudFront Function from your own JavaScript source.
+   * Routing (including multi-SPA) is an application concern — implement it here and
+   * align KVS keys with `kvsKeyForSite` / deploy `sitePath` from `@ln80/cloudfront-toolkit/deploy`.
+   */
+  public viewerRequestFunctionFromFile(
+    id: string,
+    filePath: string
+  ): cloudfront.Function {
+    return new cloudfront.Function(this, id, {
+      code: cloudfront.FunctionCode.fromFile({ filePath }),
+      comment:
+        "Routes requests to versioned S3 paths for immutable deployments",
+      keyValueStore: this.kvStore,
+    });
+  }
 
-    // Create CloudFront Function
-    const changeUriFunction = new cloudfront.Function(
-      this,
-      "ChangeUriFunction",
-      {
-        code: cloudfront.FunctionCode.fromInline(functionCode),
-        comment:
-          "Routes requests to versioned S3 paths for versionned deployments",
-        keyValueStore: this.kvStore,
-      }
-    );
-
-    return changeUriFunction;
+  /**
+   * @deprecated Use `viewerRequestFunctionFromFile`.
+   */
+  public changeUriFunctionFromFile(filePath: string): cloudfront.Function {
+    return this.viewerRequestFunctionFromFile("ChangeUriFunction", filePath);
   }
 }
